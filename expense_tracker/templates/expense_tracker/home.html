@@ -49,7 +49,7 @@
 
     // Define the axes
     var xAxis = d3.svg.axis().scale(x)
-      .orient("bottom").ticks(200);
+      .orient("bottom").ticks(10);
 
     var yAxis = d3.svg.axis().scale(y)
       .orient("left").ticks(10);
@@ -104,7 +104,21 @@
         return a.purchase_date - b.purchase_date;
       }
       my_releases = my_releases.sort(sortByDateAscending);
-      console.log(my_releases);
+
+      my_releases = d3.nest()
+        .key(function(d) {
+          return d.purchase_date;
+        })
+        .rollup(function(d) {
+          return d3.sum(d, function(g) {
+            return g.purchase_value;
+          });
+        }).entries(my_releases);
+      my_releases.forEach(function(d) {
+        d.purchase_date = new Date(d.key);
+        d.purchase_value = d.values;
+      });
+
 
       x.domain(d3.extent(my_releases, function(release) {
         return release.purchase_date;
